@@ -30,8 +30,23 @@ typedef enum	e_state
 
 typedef struct	s_philo
 {
-	t_state	state;
-	int		number;
+	pthread_t	thid;
+	t_state		state;
+	int			number;
 }				t_philo;
+
+typedef struct	s_data
+{
+	int		nmb_of_philo;
+	int		time_to_die;
+	int		time_to_eat;
+	int		time_to_sleep;
+	int		nmb_of_meals;
+}				t_data;
+//		UTILS
+
+int		ft_is_space(int c);
+int		ft_is_digit(int c);
+int		ft_atoi(const char *str);
 
 #endif

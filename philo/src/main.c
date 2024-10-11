@@ -12,42 +12,32 @@
 
 #include "../include/philo.h"
 
-void *thread(void *arg) {
-  void *ret;
-  printf("thread() entered with argument '%s'\n", (char *)arg);
-  if ((ret = (char*) malloc(20)) == NULL) {
-    perror("malloc() error");
-    exit(2);
-  }
-  strcpy(ret, "This is a test");
-  pthread_exit(ret);
+void *routine(void *arg) {
+	
 }
 
 
 long long get_timestamp_in_milliseconds() {
-    struct timeval tv;
-    gettimeofday(&tv, NULL); // Get the current time
+		struct timeval tv;
+		gettimeofday(&tv, NULL); // Get the current time
 
-    // Calculate milliseconds since epoch
-    long long milliseconds = (tv.tv_sec * 1000LL) + (tv.tv_usec / 1000);
-    return milliseconds;
+		// Calculate milliseconds since epoch
+		long long milliseconds = (tv.tv_sec * 1000LL) + (tv.tv_usec / 1000);
+		return milliseconds;
+}
+void  check_input(int ac, char **av)
+{
+	if (ac < 5 || ac > 6)
+		printf("wrong number of arguments\n");
+	if (ft_is_digit(av[1]))
+		{;}
 }
 
-int main(void) {
-  pthread_t thid;
-  void *ret;
-  
-  long long timestamp = get_timestamp_in_milliseconds();
-  printf("Current timestamp in milliseconds: %lld\n", timestamp);
-  if (pthread_create(&thid, NULL, thread, "thread 1") != 0) {
-    perror("pthread_create() error");
-    exit(1);
-  }
-  if (pthread_join(thid, &ret) != 0) {
-    perror("pthread_create() error");
-    exit(3);
-  }
-  printf("thread exited with '%s'\n", (char *)ret);
-  timestamp = get_timestamp_in_milliseconds();
-  printf("Current timestamp in milliseconds: %lld\n", timestamp);
+void  init_vars(char **av)
+{}
+
+int main(int  ac, char **av)
+{
+	t_philo philo1;
+
 }
