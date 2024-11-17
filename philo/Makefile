@@ -1,7 +1,7 @@
 NAME		= philosophers
 CC			= cc
 BIN			= bin
-SRC			= src/main.c
+SRC			= src/init.c src/main.c src/sim.c src/utils.c
 OBJS		= $(SRC:src/%c=$(BIN)/%o)
 INCS		= include
 CFLAGS		= -Wall -Werror -Wextra -g

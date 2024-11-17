@@ -28,25 +28,53 @@ typedef enum	e_state
 	DEAD
 }				t_state;
 
+typedef struct	s_vars
+{
+	int				nmb_of_forks;
+	int				nmb_of_philos;
+	int				time_to_die;
+	int				time_to_eat;
+	int				time_to_sleep;
+	int				nmb_of_meals;
+	int				is_running;
+	long long int	start_time;
+	pthread_t		monitor;
+	pthread_t		*threads;
+	pthread_mutex_t	*forks;
+	pthread_mutex_t message;
+}				t_vars;
+
 typedef struct	s_philo
 {
-	pthread_t	thid;
-	t_state		state;
-	int			number;
+	t_state			state;
+	int				number;
+	int				meals_ate;
+	long long int	last_meal;
+	pthread_mutex_t	*l_fork;
+	pthread_mutex_t	*r_fork;
+	pthread_t		id;
+	t_vars			*vars;
 }				t_philo;
 
-typedef struct	s_data
-{
-	int		nmb_of_philo;
-	int		time_to_die;
-	int		time_to_eat;
-	int		time_to_sleep;
-	int		nmb_of_meals;
-}				t_data;
-//		UTILS
+//		INIT
+int				init_vars(t_vars **vars, int ac, char **av);
+int				init_forks(t_vars *vars);
+void			init_philo(t_vars *vars, t_philo *philo, pthread_mutex_t *forks, int i);
+int				init(t_philo **philos, int ac, char **av);
+int				error_exit(char *message);
 
-int		ft_is_space(int c);
-int		ft_is_digit(int c);
-int		ft_atoi(const char *str);
+//		SIM
+void			start_sim(t_philo *philos);
+void			*routine(void	*args);
+void			*monitoring(void	*args);
+void			put_msg(t_philo *philo, char *message);
+void			destroy_mutex(t_philo *philos);
+
+//		UTILS
+int				atoi(const char *str);
+int				is_space(int c);
+int				is_digit(int c);
+unsigned int	get_time(void);
+void			ft_sleep(t_vars *vars, long long time);
 
 #endif

@@ -12,32 +12,17 @@
 
 #include "../include/philo.h"
 
-void *routine(void *arg) {
-	
-}
-
-
-long long get_timestamp_in_milliseconds() {
-		struct timeval tv;
-		gettimeofday(&tv, NULL); // Get the current time
-
-		// Calculate milliseconds since epoch
-		long long milliseconds = (tv.tv_sec * 1000LL) + (tv.tv_usec / 1000);
-		return milliseconds;
-}
-void  check_input(int ac, char **av)
-{
-	if (ac < 5 || ac > 6)
-		printf("wrong number of arguments\n");
-	if (ft_is_digit(av[1]))
-		{;}
-}
-
-void  init_vars(char **av)
-{}
-
 int main(int  ac, char **av)
 {
-	t_philo philo1;
+	t_philo *philos;
 
+	if (ac >= 5 && ac <= 6)
+	{
+		if (init(&philos, ac, av) == -1)
+			return (1);
+		start_sim(philos);
+	}
+	else
+		printf("Error\nWrong number of arguments\n");
+	return (0);
 }

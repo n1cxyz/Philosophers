@@ -12,33 +12,33 @@
 
 #include "../include/philo.h"
 
-int	ft_atoi(const char *str)
+int	atoi(const char *str)
 {
-	int	nbr;
-	int	sign;
+	size_t			i;
+	long long int	result;
 
-	sign = 1;
-	nbr = 0;
-	while (is_space((char) *str) != 0)
-		str++;
-	if (ft_strncmp(str, "-2147483648", 11) == 0)
-		return (-2147483648);
-	if (*str == '+' || *str == '-')
+	i = 0;
+	result = 0;
+	while (is_space(str[i]))
+		i++;
+	if (str[i] == '-')
+		return (-1);
+	while (str[i] == '+')
+		i++;
+	while (is_digit(str[i]))
 	{
-		if (*str == '-')
-			sign = -1;
-		str++;
+		result *= 10;
+		result += str[i] - '0';
+		if (result > 2147483647)
+			return (-1);
+		i++;
 	}
-	while (ft_isdigit(*str) != 0)
-	{
-		nbr = nbr * 10;
-		nbr = nbr + *str - 48;
-		str++;
-	}
-	return (sign * nbr);
+	if (str[i] != '\0')
+		return (-1);
+	return (result);
 }
 
-int	ft_is_space(int c)
+int	is_space(int c)
 {
 	if (c == ' ' || (c >= '\t' && c <= '\r'))
 	{
@@ -47,11 +47,32 @@ int	ft_is_space(int c)
 	return (0);
 }
 
-int	ft_is_digit(int c)
+int	is_digit(int c)
 {
 	if (c >= '0' && c <= '9')
 	{
 		return (2048);
 	}
 	return (0);
+}
+
+unsigned int	get_time(void)
+{
+	struct timeval	current_time;
+
+	gettimeofday(&current_time, NULL);
+	return ((current_time.tv_sec * 1000) + (current_time.tv_usec / 1000));
+}
+
+void	ft_sleep(t_vars *vars, long long time)
+{
+	long long current_time;
+
+	current_time = get_time();
+	while (vars->is_running)
+	{
+		if (get_time() - current_time >= time)
+			break ;
+		usleep(500);
+	}
 }
