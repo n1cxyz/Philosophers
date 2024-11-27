@@ -66,10 +66,10 @@ unsigned int	get_time(void)
 
 void	ft_sleep(t_vars *vars, long long time)
 {
-	long long current_time;
+	long long	current_time;
 
 	current_time = get_time();
-	while (vars->is_running)
+	while (get_is_running(vars))
 	{
 		if (get_time() - current_time >= time)
 			break ;

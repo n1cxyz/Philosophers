@@ -1,9 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dasal <dasal@student.42berlin.de>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/11/27 11:33:32 by dasal             #+#    #+#             */
+/*   Updated: 2024/11/27 11:33:33 by dasal            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
 int	init_vars(t_vars **vars, int ac, char **av)
 {
-
-	t_vars *tmp;
+	t_vars	*tmp;
 
 	tmp = (t_vars *)malloc(sizeof(t_vars));
 	if (!tmp)
@@ -34,7 +45,7 @@ int	init_forks(t_vars *vars)
 	i = 0;
 	j = 0;
 	vars->forks = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * 
-		vars->nmb_of_forks);
+			vars->nmb_of_forks);
 	if (!vars->forks)
 		return (error_exit("Error\nForks malloc failed\n"));
 	while (i < vars->nmb_of_forks)
@@ -55,18 +66,20 @@ int	init_forks(t_vars *vars)
 
 void	init_philo(t_vars *vars, t_philo *philo, pthread_mutex_t *forks, int i)
 {
+	pthread_mutex_init(&philo->meal_mutex, NULL);
+	pthread_mutex_init(&philo->meals_ate_mutex, NULL);
 	philo->number = i + 1;
 	philo->meals_ate = 0;
 	philo->last_meal = 0;
 	philo->vars = vars;
-	if (i == 0)
+	if (i % 2 == 0)
 	{
-		philo->l_fork = forks + (vars->nmb_of_philos - 1);
-		philo->r_fork = forks + i;
+		philo->l_fork = forks + i;
+		philo->r_fork = forks + ((i + 1) % vars->nmb_of_philos);
 	}
 	else
 	{
-		philo->l_fork = forks + (i - 1);
+		philo->l_fork = forks + ((i + 1) % vars->nmb_of_philos);
 		philo->r_fork = forks + i;
 	}
 }
@@ -82,18 +95,17 @@ int	init(t_philo **philos, int ac, char **av)
 		return (-1);
 	if (pthread_mutex_init(&vars->message, NULL))
 		return (error_exit("Error\nMutex init\n"));
+	if (pthread_mutex_init(&vars->running_mutex, NULL))
+		return (error_exit("Error\nMutex init\n"));
 	if (init_forks(vars))
 		return (-1);
 	tmp = (t_philo *)malloc(sizeof(t_philo) * vars->nmb_of_philos);
 	if (!tmp)
 		return (error_exit("Error\nPhilos malloc"));
 	while (++i < vars->nmb_of_philos)
-	{
 		init_philo(vars, tmp + i, vars->forks, i);
-		//i++;
-	}
 	*philos = tmp;
-	return (0);	
+	return (0);
 }
 
 int	error_exit(char *message)

@@ -12,9 +12,9 @@
 
 #include "../include/philo.h"
 
-int main(int  ac, char **av)
+int	main(int ac, char **av)
 {
-	t_philo *philos;
+	t_philo	*philos;
 
 	if (ac >= 5 && ac <= 6)
 	{

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   sim.c                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dasal <dasal@student.42berlin.de>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/11/27 11:33:41 by dasal             #+#    #+#             */
+/*   Updated: 2024/11/27 11:33:43 by dasal            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
 void	start_sim(t_philo *philos)
@@ -11,38 +23,48 @@ void	start_sim(t_philo *philos)
 		(philos + i)->last_meal = get_time();
 		if (pthread_create(&(philos + i)->id, NULL, &routine, philos + i))
 			error_exit("Error\nCreate philo fail\n");
-		pthread_detach((philos + i)->id);
-		usleep(50);
+		usleep(500);
 		i++;
 	}
 	if (pthread_create(&philos->vars->monitor, NULL, &monitoring, philos))
 		error_exit("Error\nCreate monitor fail\n");
 	if (pthread_join(philos->vars->monitor, NULL))
 		error_exit("Error\nJoin monitor fail\n");
+	i = 0;
+	while (i < philos->vars->nmb_of_philos)
+	{
+		if (pthread_join((philos + i)->id, NULL))
+			error_exit("Error\nJoin philo fail\n");
+		i++;
+	}
 	destroy_mutex(philos);
 }
 
 void	*routine(void	*args)
 {
-	t_philo *philo;
+	t_philo	*philo;
 
 	philo = (t_philo *)args;
-	while (philo->vars->is_running)
+	while (get_is_running(philo->vars))
 	{
-		put_msg(philo, "is thinking");
 		pthread_mutex_lock(philo->l_fork);
 		put_msg(philo, "has taken a fork");
+		if (philo->vars->nmb_of_philos == 1)
+		{
+			pthread_mutex_unlock(philo->l_fork);
+			break ;
+		}
 		pthread_mutex_lock(philo->r_fork);
 		put_msg(philo, "has taken a fork");
 		put_msg(philo, "is eating");
+		set_last_meal(philo);
 		ft_sleep(philo->vars, philo->vars->time_to_eat);
-		philo->last_meal = get_time();
-		pthread_mutex_unlock(philo->l_fork);
-		pthread_mutex_unlock(philo->r_fork);
-		if (philo->vars->is_running)
-			philo->meals_ate++;
+		if (get_is_running(philo->vars))
+			set_meals_ate(philo);
+		unlock_forks(philo);
 		put_msg(philo, "is sleeping");
 		ft_sleep(philo->vars, philo->vars->time_to_sleep);
+		put_msg(philo, "is thinking");
 	}
 	return (0);
 }
@@ -51,28 +73,27 @@ void	*monitoring(void	*args)
 {
 	int		i;
 	int		stop_flag;
-	t_philo *philos;
+	t_philo	*philos;
 
 	philos = (t_philo *)args;
-	while (philos->vars->is_running)
+	while (get_is_running(philos->vars))
 	{
 		i = 0;
 		stop_flag = 0;
 		while (i < philos->vars->nmb_of_philos)
 		{
-			if (get_time() - (philos + i)->last_meal > philos->vars->time_to_die)
+			if ((get_time() - get_last_meal(philos + i)) > 
+				philos->vars->time_to_die)
 			{
 				put_msg(philos + i, "died");
-				philos->vars->is_running = 0;
+				set_is_running(philos->vars, 0);
 				break ;
 			}
-			if (philos->vars->nmb_of_meals != -2 && 
-				(philos + i)->meals_ate >= philos->vars->nmb_of_meals)
-				stop_flag++;
+			check_and_stop(philos, i, &stop_flag);
 			i++;
 		}
 		if (stop_flag == philos->vars->nmb_of_philos)
-			philos->vars->is_running = 0;
+			set_is_running(philos->vars, 0);
 	}
 	return (0);
 }
@@ -80,7 +101,7 @@ void	*monitoring(void	*args)
 void	put_msg(t_philo *philo, char *message)
 {
 	pthread_mutex_lock(&philo->vars->message);
-	if (philo->vars->is_running)
+	if (get_is_running(philo->vars))
 		printf("%lld %d %s\n", 
 			get_time() - philo->vars->start_time, philo->number, message);
 	pthread_mutex_unlock(&philo->vars->message);
@@ -94,7 +115,13 @@ void	destroy_mutex(t_philo *philos)
 	while (i < philos->vars->nmb_of_forks)
 	{
 		pthread_mutex_destroy(&philos->vars->forks[i]);
+		pthread_mutex_destroy(&(philos + i)->meal_mutex);
+		pthread_mutex_destroy(&(philos + i)->meals_ate_mutex);
 		i++;
 	}
 	pthread_mutex_destroy(&philos->vars->message);
+	pthread_mutex_destroy(&philos->vars->running_mutex);
+	free(philos->vars->forks);
+	free(philos->vars);
+	free(philos);
 }
